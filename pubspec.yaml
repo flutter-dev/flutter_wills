@@ -1,0 +1,13 @@
+name: flutter_wills
+description: A Reactive Library For Flutter
+version: 0.0.1
+
+environment:
+  sdk: '>=1.20.1 <2.0.0'
+
+dev_dependencies:
+  flutter:
+    sdk: flutter
+  flutter_test:
+      sdk: flutter
+
