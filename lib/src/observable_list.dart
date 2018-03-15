@@ -24,8 +24,7 @@ class ObservableList<E> extends ListBase<E> with Reactive {
   void operator []=(int index, E value) {
     if(_list[index] == value) return;
     _list[index] = value;
-    //$ob.$notify();
-    $observe();
+    $notify();
   }
 
   @override

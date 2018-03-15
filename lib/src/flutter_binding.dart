@@ -76,6 +76,29 @@ abstract class ReactiveWidget extends StatefulWidget {
 
 }
 
+//typedef dynamic OnCall(List);
+//refer https://stackoverflow.com/questions/13731631/creating-function-with-variable-number-of-arguments-or-parameters-in-dart
+//class VarargsFunction {
+//
+//  Function _onCall;
+//
+//  //ReactiveState<Store<Reactive>, ReactiveWidget> _context;
+//  Watcher _watcher;
+//
+//  VarargsFunction(this._watcher, this._onCall);
+//
+//  call() => _onCall();
+//
+//  noSuchMethod(Invocation invocation) {
+//    final positionalArguments = invocation.positionalArguments;
+//    final namedArguments = invocation.namedArguments;
+//    Watcher.pushActive(_watcher);
+//    var result = Function.apply(_onCall, positionalArguments, namedArguments);
+//    Watcher.popActive();
+//    return result;
+//  }
+//}
+
 typedef void UnwatchFunc();
 
 abstract class ReactiveState<S extends Store<Reactive>, W extends ReactiveWidget> extends State<W> {
@@ -99,6 +122,14 @@ abstract class ReactiveState<S extends Store<Reactive>, W extends ReactiveWidget
   }
 
   Widget render(BuildContext context);
+
+  $enterScope() {
+    Watcher.pushActive(_watcher);
+  }
+
+  $leaveScope() {
+    Watcher.popActive();
+  }
 
   UnwatchFunc $watch(funcOrExpression, fn) {
     ObserverFunc func;
