@@ -101,6 +101,17 @@ abstract class ReactiveWidget extends StatefulWidget {
 
 typedef void UnwatchFunc();
 
+willsWatch(func, handler, [bool immediate = true]) {
+  Watcher watcher = new UserWatcher(handler);
+  Watcher.pushActive(watcher);
+  func();
+  Watcher.popActive();
+  if(immediate) handler();
+  return () {
+    watcher.clear();
+  };
+}
+
 abstract class ReactiveState<S extends Store<Reactive>, W extends ReactiveWidget> extends State<W> {
 
   RenderWatcher _watcher = new RenderWatcher();
@@ -144,9 +155,9 @@ abstract class ReactiveState<S extends Store<Reactive>, W extends ReactiveWidget
     } else {
       func = funcOrExpression;
     }
-    Watcher watcher = new UserWatcher(func);
+    Watcher watcher = new UserWatcher(fn);
     Watcher.pushActive(watcher);
-    watcher.run();
+    func();
     Watcher.popActive();
     return () {
       watcher.clear();

@@ -25,7 +25,7 @@ abstract class WillsAction<S extends Store<Reactive>, T> {
     ss..onData((data)=> result = data)..onDone(() {
       _resultCompleter.complete(result);
     });
-    return result;
+    //return result;
   }
 
   Stream exec() async* {}
@@ -33,14 +33,17 @@ abstract class WillsAction<S extends Store<Reactive>, T> {
 
 abstract class WillsRunLastAction<S extends Store<Reactive>, T> extends WillsAction<S, T> {
 
-  static int execId = 0;
+  static Map<Type, int> _internalExecIdMap = new Map();
 
-  int _execId;
+  int _currentExecId;
 
   @override
-  call() {
-    _execId = ++execId;
-    dynamic result;
+  call() async {
+    if(_internalExecIdMap[this.runtimeType] == null) {
+      _internalExecIdMap[this.runtimeType] = 0;
+    }
+    _currentExecId = ++_internalExecIdMap[this.runtimeType];
+    var result;
     StreamSubscription ss;
     ss = exec().handleError((err) {
       _resultCompleter.completeError(err);
@@ -48,9 +51,10 @@ abstract class WillsRunLastAction<S extends Store<Reactive>, T> extends WillsAct
     }).listen(null);
     ss..onData((data) {
       result = data;
-      if(_execId != execId) {
+      if(_currentExecId != _internalExecIdMap[this.runtimeType]) {
+        ss.pause();
         ss.cancel();
-        _resultCompleter.completeError(const WillsActionInterruptException());
+        _resultCompleter.completeError(new WillsActionInterruptException(this));
       }
     })..onDone(() {
       if(!_resultCompleter.isCompleted) {

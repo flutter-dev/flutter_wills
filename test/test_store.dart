@@ -26,7 +26,7 @@ mockAsyncRequest() {
 class TestAsyncAction extends WillsRunLastAction<Store, String> {
 
   @override
-  Stream exec() async* {
+  Stream<String> exec() async* {
     for(int i = 0; i < 3; i++) {
       yield await mockAsyncThrowException();
     }
