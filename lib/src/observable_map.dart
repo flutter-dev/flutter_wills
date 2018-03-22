@@ -37,15 +37,18 @@ class ObservableMap<K, V> extends MapBase<K, V> with Reactive {
 
   @override
   V operator [](Object key) {
-    $observe();
+    $observe(key);
     return _map[key];
   }
 
 
   @override
   void operator []=(K key, V value) {
-    _map[key] = value;
-    $notify();
+    if(_map[key] == value) return;
+    bool needNotify = !_map.containsKey(key); //add
+    _map[key] = value; //add or update
+    if(needNotify) $notify();
+    $notify(key);
   }
 
   @override
@@ -58,6 +61,7 @@ class ObservableMap<K, V> extends MapBase<K, V> with Reactive {
   V remove(Object key) {
     V result = _map.remove(key);
     $notify();
+    $notify(key);
     return result;
   }
 }

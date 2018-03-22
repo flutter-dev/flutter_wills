@@ -101,7 +101,7 @@ abstract class ReactiveWidget extends StatefulWidget {
 
 typedef void UnwatchFunc();
 
-willsWatch(func, handler, [bool immediate = true]) {
+willsWatch(func, handler, [bool immediate = false]) {
   Watcher watcher = new UserWatcher(handler);
   Watcher.pushActive(watcher);
   func();

@@ -40,10 +40,6 @@ main() {
     Store store = new Store();
     var result;
     try {
-//      new Timer(const Duration(seconds: 4), () {
-//        print('dispatch annother async action');
-//        store.dispatch(new TestAsyncAction());
-//      });
       result = await store.dispatch(new TestAsyncAction());
     } on WillsActionInterruptException catch(err) {
       print(err);

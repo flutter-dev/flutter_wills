@@ -25,7 +25,7 @@ abstract class WillsAction<S extends Store<Reactive>, T> {
     ss..onData((data)=> result = data)..onDone(() {
       _resultCompleter.complete(result);
     });
-    //return result;
+    return result;
   }
 
   Stream exec() async* {}

@@ -1,16 +1,17 @@
+import 'dart:async';
 import 'dart:collection';
 
 abstract class Reactive {
-  Map<String, Observer> _mapping = new HashMap();
+  Map<dynamic, Observer> _mapping = new HashMap();
 
-  void $observe([String field = '_']) {
+  void $observe([field = '_']) {
     if(!_mapping.containsKey(field)) {
       _mapping[field] = new Observer();
     }
     _mapping[field].$depend();
   }
 
-  void $notify([String field = '_']) {
+  void $notify([field = '_']) {
     _mapping[field]?.$notify();
   }
 
@@ -40,7 +41,8 @@ class Observer {
 
   void $notify() {
     watchers.forEach((w) {
-      w.run();
+      //w.run();
+      Watcher._addPendingWatcher(w);
     });
   }
 
@@ -63,6 +65,26 @@ class Watcher {
   LinkedHashSet<Observer> deps = new LinkedHashSet();
 
   static List<Watcher> _trackWatchers = new List();
+
+  static LinkedHashSet<Watcher> _pendingUpdateWatchers = new LinkedHashSet();
+
+  static bool _hasScheduledUpdateTask = false;
+
+  static _addPendingWatcher(Watcher w) {
+    _pendingUpdateWatchers.add(w);
+    _scheduleUpdateTask();
+  }
+
+  static _scheduleUpdateTask() {
+    if(!_hasScheduledUpdateTask) {
+      scheduleMicrotask(() {
+        _pendingUpdateWatchers.forEach((w) => w.run());
+        _pendingUpdateWatchers.clear();
+        _hasScheduledUpdateTask = false;
+      });
+    }
+    _hasScheduledUpdateTask = true;
+  }
 
   static Watcher active;
 

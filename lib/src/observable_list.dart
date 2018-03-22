@@ -5,8 +5,6 @@ import 'package:flutter_wills/src/core.dart';
 //refer: https://github.com/dart-lang/observable/blob/master/lib/src/observable_list.dart
 class ObservableList<E> extends ListBase<E> with Reactive {
 
-  //Observer $ob = new Observer();
-
   final List<E> _list;
 
   ObservableList([int length])
@@ -16,7 +14,7 @@ class ObservableList<E> extends ListBase<E> with Reactive {
 
   @override
   E operator [](int index) {
-    $observe();
+    $observe(index);
     return _list[index];
   }
 
@@ -24,7 +22,7 @@ class ObservableList<E> extends ListBase<E> with Reactive {
   void operator []=(int index, E value) {
     if(_list[index] == value) return;
     _list[index] = value;
-    $notify();
+    $notify(index); //add or update
   }
 
   @override
@@ -39,6 +37,9 @@ class ObservableList<E> extends ListBase<E> with Reactive {
     if (len == value) return;
     _list.length = value;
     $notify();
+    while(len-- > value) { //remove
+      $notify(len);
+    }
   }
 
 }
