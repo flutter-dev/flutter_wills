@@ -62,28 +62,64 @@ class Observer {
 
 class Watcher {
 
+  int id = 0;
+
   LinkedHashSet<Observer> deps = new LinkedHashSet();
+
+  static int _uid = 0;
+
+  static const int MAX_UPDATE_COUNT = 99;
 
   static List<Watcher> _trackWatchers = new List();
 
   static LinkedHashSet<Watcher> _pendingUpdateWatchers = new LinkedHashSet();
 
+  static HashMap<int, int> _circular = new HashMap();
+
   static bool _hasScheduledUpdateTask = false;
 
   static _addPendingWatcher(Watcher w) {
     _pendingUpdateWatchers.add(w);
-    _scheduleUpdateTask();
+    if(!_hasScheduledUpdateTask) {
+      _scheduleUpdateTask();
+      _hasScheduledUpdateTask = true;
+    }
   }
 
   static _scheduleUpdateTask() {
-    if(!_hasScheduledUpdateTask) {
-      scheduleMicrotask(() {
-        _pendingUpdateWatchers.forEach((w) => w.run());
-        _pendingUpdateWatchers.clear();
-        _hasScheduledUpdateTask = false;
+    scheduleMicrotask(() {
+      List<Watcher> watchers = _pendingUpdateWatchers.toList();
+      _pendingUpdateWatchers.clear();
+
+      watchers.forEach((w){
+        assert(() {
+          if(_circular[w.id] != null) {
+            if(++_circular[w.id] > MAX_UPDATE_COUNT) {
+              throw new StateError('it seem to run in a infinite loop, please check, watcher: ${w.id}');
+            }
+          } else {
+            _circular[w.id] = 0;
+          }
+          return true;
+        }());
+
+        w.run();
       });
-    }
-    _hasScheduledUpdateTask = true;
+
+      if(_pendingUpdateWatchers.isNotEmpty) { // check again
+        _scheduleUpdateTask();
+      } else {
+        _resetScheduleState();
+      }
+    });
+  }
+
+  static _resetScheduleState() {
+    _hasScheduledUpdateTask = false;
+    assert(() {
+      _circular.clear();
+      return true;
+    }());
   }
 
   static Watcher active;
@@ -97,6 +133,7 @@ class Watcher {
     active = _trackWatchers.removeLast();
   }
 
+  Watcher(): id = _uid++;
 
   void run() {}
 
