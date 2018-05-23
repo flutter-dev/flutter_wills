@@ -50,6 +50,7 @@ class ReactiveProp<T> extends Object with Reactive {
   }
 
   set self(T _self) {
+    if(_val == _self) return;
     _val = _self;
     $notify('self');
   }
@@ -166,8 +167,8 @@ abstract class ReactiveState<S extends Store<Reactive>, W extends ReactiveWidget
 
   @override
   void dispose() {
-    super.dispose();
     _watcher._unbind(this);
+    super.dispose();
   }
 
 }
